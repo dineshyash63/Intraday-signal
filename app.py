@@ -5,20 +5,19 @@ import yfinance as yf
 
 # Pakkathin thalappu matrum vadivamaippu
 st.set_page_config(
-    page_title="Ultimate 3-Signals Intraday Profit Engine",
+    page_title="Ultimate Pro Intraday Trading System",
     page_icon="💎",
     layout="wide",
 )
 
-st.title("💎 Ultimate Pro Live Intraday Profit Engine (Daily Top 3 Signals)")
+st.title("💎 Advanced Pro Live Intraday Trading & AI Engine")
 st.write(
-    "Vanakkam nanba! Live market data-vai scan panni, oru nalukku"
-    " kandippaaga **3 Best Intraday Trade Signals**-ai tharuvathodu, adhai"
-    " Telegram-kku anuppum prathyega app."
+    "Vanakkam nanba! RSI, SMA matrum Volume momentum-udan error illamal 3"
+    " best signals tharum app."
 )
 
 # --- Sidebar: Telegram & Risk Management ---
-st.sidebar.header("🛠️ Telegram & Risk Management")
+st.sidebar.header("🛠️ Advanced Settings & Risk Management")
 
 default_token = "8462007353:AAFZsWmNgiVWBIPngaA5AEnHqzwWhMRl9hU"
 default_chat_id = "1147331498"
@@ -47,9 +46,9 @@ if auto_refresh:
   st.rerun()
 
 st.sidebar.markdown("---")
-st.subheader("🔥 Daily Top 3 Market Scanner")
+st.subheader("🔥 Advanced Market Scanner (Top 3 Signals)")
 
-# Expanded Nifty 50 High Volume Watchlist
+# Expanded Nifty High Volume Watchlist
 watchlist = [
     "RELIANCE.NS",
     "TATAMOTORS.NS",
@@ -81,70 +80,100 @@ def send_telegram_alert(token, chat_id, message):
   return False
 
 
-if st.button("🚀 Run Scan & Get Top 3 Trade Signals"):
-  with st.spinner("Market data-vai aayvu seithu Top 3 signals edukkirathu..."):
+if st.button("🚀 Run Advanced Scan & Get Signals"):
+  with st.spinner("Market data-vai error-free-ah scan seigirathu..."):
     try:
       scored_stocks = []
 
       for symbol in watchlist:
         try:
+          # period-ai 30 days-ku mathiyullom, appothan RSI ku thevaiyana 14+ days data kandippa kidaikkum
           ticker = yf.Ticker(symbol)
-          df = ticker.history(period="5d", interval="1d")
-          if not df.empty and len(df) >= 2:
-            latest_price = df["Close"].iloc[-1]
-            prev_close = df["Close"].iloc[-2]
-            day_high = df["High"].iloc[-1]
-            day_low = df["Low"].iloc[-1]
-            vol = df["Volume"].iloc[-1]
+          df = ticker.history(period="30d", interval="1d")
+
+          if df is not None and not df.empty and len(df) >= 15:
+            # Drop any rows with NaN in Close
+            df = df.dropna(subset=["Close", "High", "Low", "Volume"])
+            if len(df) < 15:
+              continue
+
+            latest_price = float(df["Close"].iloc[-1])
+            prev_close = float(df["Close"].iloc[-2])
+            day_high = float(df["High"].iloc[-1])
+            day_low = float(df["Low"].iloc[-1])
+            vol = int(df["Volume"].iloc[-1])
+
+            # Safe SMA & RSI calculation
+            sma_5 = float(df["Close"].rolling(window=5).mean().iloc[-1])
+            delta = df["Close"].diff()
+            gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+
+            rs = gain / loss
+            rsi_series = 100 - (100 / (1 + rs))
+            current_rsi = float(rsi_series.iloc[-1])
+
+            if (
+                str(current_rsi) == "nan"
+                or str(latest_price) == "nan"
+                or str(prev_close) == "nan"
+            ):
+              continue
 
             price_change_pct = ((latest_price - prev_close) / prev_close) * 100
             range_pct = ((day_high - day_low) / latest_price) * 100
-            momentum_score = abs(price_change_pct) + range_pct
+            momentum_score = abs(price_change_pct) + range_pct + abs(current_rsi - 50)
 
-            if price_change_pct >= 0:
-              direction = "BUY (LONG)"
+            if latest_price >= sma_5 and current_rsi >= 45:
+              direction = "STRONG BUY (LONG)"
               entry_zone = f"₹{latest_price:.2f} - ₹{(latest_price * 1.002):.2f}"
               target_1 = f"₹{(latest_price * 1.015):.2f}"
               target_2 = f"₹{(latest_price * 1.03):.2f}"
               stop_loss = f"₹{(latest_price * 0.99):.2f}"
+              sl_numeric = latest_price * 0.99
             else:
-              direction = "SELL (SHORT)"
+              direction = "STRONG SELL (SHORT)"
               entry_zone = f"₹{latest_price:.2f} - ₹{(latest_price * 0.998):.2f}"
               target_1 = f"₹{(latest_price * 0.985):.2f}"
               target_2 = f"₹{(latest_price * 0.97):.2f}"
               stop_loss = f"₹{(latest_price * 1.01):.2f}"
+              sl_numeric = latest_price * 1.01
+
+            risk_per_share = abs(latest_price - sl_numeric)
+            suggested_qty = (
+                int(allowed_loss / risk_per_share) if risk_per_share > 0 else 1
+            )
+            if suggested_qty < 1:
+              suggested_qty = 1
 
             scored_stocks.append({
                 "symbol": symbol.replace(".NS", ""),
                 "price": latest_price,
                 "change": price_change_pct,
+                "rsi": current_rsi,
                 "score": momentum_score,
                 "direction": direction,
                 "entry": entry_zone,
                 "target1": target_1,
                 "target2": target_2,
                 "sl": stop_loss,
+                "qty": suggested_qty,
                 "vol": vol,
             })
         except Exception:
           continue
 
       if scored_stocks:
-        # Sort by momentum score to get top stocks
         scored_stocks.sort(key=lambda x: x["score"], reverse=True)
-
-        # Select top 3 stocks guaranteed
         top_3_stocks = scored_stocks[:3]
 
         st.success("✅ Market Scanning Vetrikaramaga Mudinthathu!")
         st.markdown("---")
         st.markdown(
-            "### 🌟 Today's Guaranteed TOP 3 Intraday Profit Trade Signals:"
+            "### 🌟 Today's Guaranteed TOP 3 Intraday Profit Signals:"
         )
 
-        tg_message = (
-            f"🚨 *EXPERT DAILY TOP 3 INTRADAY SIGNALS* 🚨\n\n"
-        )
+        tg_message = "🚨 *EXPERT DAILY TOP 3 INTRADAY SIGNALS* 🚨\n\n"
 
         for i, stock in enumerate(top_3_stocks, 1):
           with st.container():
@@ -152,53 +181,54 @@ if st.button("🚀 Run Scan & Get Top 3 Trade Signals"):
                 f"### 🏆 Rank {i}: {stock['symbol']} ({stock['direction']})"
             )
             col1, col2, col3 = st.columns(3)
-            col1.write(f"Live Price: ₹{stock['price']:.2f}")
+            col1.write(f"Live Price: ₹{stock['price']:.2f} | RSI: {stock['rsi']:.1f}")
             if stock["change"] >= 0:
               col1.markdown(
                   "Change: :green[+" + f"{stock['change']:.2f}%" + "]"
               )
             else:
-              col1.markdown("Change: :red[" + f"{stock['change']:.2f}%" + "]")
+              col1.markdown(
+                  "Change: :red[" + f"{stock['change']:.2f}%" + "]"
+              )
 
             col2.write(f"**Entry Zone:** {stock['entry']}")
             col2.write(f"**Stop Loss:** {stock['sl']}")
+            col2.write(f"**Suggested Qty:** {stock['qty']} Shares")
 
             col3.markdown(f"**Target 1:** {stock['target1']}")
             col3.markdown(f"**Target 2:** {stock['target2']}")
             col3.write(f"Volume: {stock['vol']:,}")
             st.markdown("---")
 
-          # Build Telegram message content for all top 3
           tg_message += (
               f"*Rank {i}: {stock['symbol']}* ({stock['direction']})\n"
-              f"💰 Price: ₹{stock['price']:.2f} | Chg: {stock['change']:.2f}%\n"
+              f"💰 Price: ₹{stock['price']:.2f} | RSI: {stock['rsi']:.1f}\n"
               f"🎯 Entry: {stock['entry']}\n"
-              f"🛡️ SL: {stock['sl']}\n"
+              f"🛡️ SL: {stock['sl']} | Qty: {stock['qty']}\n"
               f"🎯 T1: {stock['target1']} | T2: {stock['target2']}\n\n"
           )
 
         tg_message += "_Strictly follow risk management!_"
 
-        # Send all 3 signals in a single Telegram alert
         if telegram_token and chat_id:
           sent_status = send_telegram_alert(
               telegram_token, chat_id, tg_message
           )
           if sent_status:
             st.info(
-                "📲 Telegram Bot moolamaaga **TOP 3 Signals** unathu"
-                " Telegram-kku anuppappattathu!"
+                "📲 Telegram Bot moolamaaga TOP 3 Signals unathu Telegram-kku"
+                " anuppappattathu!"
             )
           else:
-            st.warning(
-                "⚠️ Telegram message anuppuvathil thadangal. Bot /start"
-                " cheythal enru parthidaavum."
-            )
+            st.warning("⚠️ Telegram message anuppuvathil thadangal.")
         else:
           st.info("💡 Telegram Token matrum Chat ID thevai.")
 
       else:
-        st.error("Market data kidaikkavillai.")
+        st.error(
+            "Market data kidaikkavillai (Weekend or Holiday aaga irukkalam)."
+        )
 
     except Exception as e:
       st.error(f"Scan seivathil thadangal: {e}")
+              
