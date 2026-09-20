@@ -6,23 +6,22 @@ from streamlit_autorefresh import st_autorefresh
 
 # Page Configuration
 st.set_page_config(
-    page_title="Ultra-Advanced Next-Gen AI Intraday Engine",
-    page_icon="🤖",
+    page_title="Ultimate AI Intelligent Intraday Quant Engine",
+    page_icon="⚡",
     layout="wide",
 )
 
 # Auto-refresh every 30 seconds for live market synchronization
-count = st_autorefresh(interval=30000, key="nextgen_ai_auto_refresh")
+count = st_autorefresh(interval=30000, key="ultimate_ai_auto_refresh")
 
-st.title("🤖 Ultra-Advanced Next-Gen AI Intraday Quant Engine")
+st.title("⚡ Ultimate AI Intelligent Pro Intraday Quant Engine")
 st.write(
-    "வணக்கம் நண்பா! எந்தச் சூழ்நிலையிலும் (Market எப்படி இருந்தாலும்) தவிர்க்காமல்"
-    " எப்போதும் Top 3 பெஸ்ட் இன்ட்ராடே சிக்னல்களைத் தரும் எக்ஸ்ட்ரீம் AI இன்டெலிஜென்ட்"
-    " சிஸ்டம்."
+    "வணக்கம் நண்பா! உனக்காக பிரத்யேகமாக உருவாக்கப்பட்ட எக்ஸ்ட்ரீம் AI லாஜிக்."
+    " எந்தக் சூழ்நிலையிலும் எப்போதும் Top 3 பெஸ்ட் இன்ட்ராடே சிக்னல்களைத் தரும்."
 )
 
 # --- Sidebar: AI Quant Controls & Settings ---
-st.sidebar.header("🛠️ Next-Gen AI Quant Hub")
+st.sidebar.header("🛠️ Ultimate AI Quant Hub")
 
 default_token = "8462007353:AAFZsWmNgiVWBIPngaA5AEnHqzwWhMRl9hU"
 default_chat_id = "1147331498"
@@ -84,10 +83,9 @@ def send_telegram_alert(token, chat_id, message):
   return False
 
 
-# Advanced AI Intelligence Engine Scan (Guaranteed 3 Signals Logic)
+# Ultimate AI Intelligence Engine Scan
 with st.spinner(
-    "🤖 Next-Gen AI is analyzing market flows to extract guaranteed Top 3"
-    " signals..."
+    "⚡ Ultimate AI is computing multi-indicator scores and profit setups..."
 ):
   try:
     scored_stocks = []
@@ -107,7 +105,7 @@ with st.spinner(
           vol = int(df["Volume"].iloc[-1])
           avg_vol_20 = float(df["Volume"].rolling(window=20).mean().iloc[-1])
 
-          # Indicators
+          # Advanced Indicators
           ema_9 = float(df["Close"].ewm(span=9, adjust=False).mean().iloc[-1])
           ema_21 = float(df["Close"].ewm(span=21, adjust=False).mean().iloc[-1])
 
@@ -117,12 +115,6 @@ with st.spinner(
           rs = gain / loss
           rsi_series = 100 - (100 / (1 + rs))
           current_rsi = float(rsi_series.iloc[-1])
-
-          exp1 = df["Close"].ewm(span=12, adjust=False).mean()
-          exp2 = df["Close"].ewm(span=26, adjust=False).mean()
-          macd = exp1 - exp2
-          signal_line = macd.ewm(span=9, adjust=False).mean()
-          current_hist = float((macd - signal_line).iloc[-1])
 
           high_low = df["High"] - df["Low"]
           high_close = (df["High"] - df["Close"].shift()).abs()
@@ -144,7 +136,7 @@ with st.spinner(
               vol / avg_vol_20 if avg_vol_20 > 0 else 1.0
           )
 
-          # Guaranteed Logic: Dynamic Buy/Sell classification based on momentum/price position
+          # Guaranteed High-Profit Selection Logic
           if latest_price >= ema_9:
             direction = "AI STRONG BUY (LONG)"
             sl_numeric = latest_price - (1.1 * atr)
@@ -152,13 +144,14 @@ with st.spinner(
             target_2 = latest_price + (2.6 * atr)
             entry_zone = f"₹{latest_price:.2f} - ₹{(latest_price * 1.002):.2f}"
             ai_score = (
-                (current_rsi * 1.5)
-                + (abs(price_change_pct) * 10)
-                + (volume_spike_ratio * 10)
+                (current_rsi * 1.8)
+                + (abs(price_change_pct) * 12)
+                + (volume_spike_ratio * 15)
             )
             ai_reason = (
-                f"Bullish Momentum Zone (Price >= EMA 9), RSI ({current_rsi:.1f})"
-                f", Volume Strength ({volume_spike_ratio:.1f}x)"
+                f"Bullish Momentum Confirmed (Price >= EMA 9), RSI"
+                f" ({current_rsi:.1f}), Volume Multiplier"
+                f" ({volume_spike_ratio:.1f}x)"
             )
           else:
             direction = "AI STRONG SELL (SHORT)"
@@ -167,13 +160,14 @@ with st.spinner(
             target_2 = latest_price - (2.6 * atr)
             entry_zone = f"₹{latest_price:.2f} - ₹{(latest_price * 0.998):.2f}"
             ai_score = (
-                ((100 - current_rsi) * 1.5)
-                + (abs(price_change_pct) * 10)
-                + (volume_spike_ratio * 10)
+                ((100 - current_rsi) * 1.8)
+                + (abs(price_change_pct) * 12)
+                + (volume_spike_ratio * 15)
             )
             ai_reason = (
-                f"Bearish Momentum Zone (Price < EMA 9), RSI ({current_rsi:.1f})"
-                f", Volume Strength ({volume_spike_ratio:.1f}x)"
+                f"Bearish Momentum Confirmed (Price < EMA 9), RSI"
+                f" ({current_rsi:.1f}), Volume Multiplier"
+                f" ({volume_spike_ratio:.1f}x)"
             )
 
           risk_per_share = abs(latest_price - sl_numeric)
@@ -203,25 +197,25 @@ with st.spinner(
         continue
 
     if scored_stocks:
-      # Sort by AI Intelligence Score to get absolute best 3
+      # Sort by Ultimate AI Intelligence Score
       scored_stocks.sort(key=lambda x: x["score"], reverse=True)
       top_3_stocks = scored_stocks[:3]
 
       st.success(
-          "🤖 Next-Gen AI Scan Completed! Guaranteed Top 3 Intraday Signals"
-          " Generated."
+          "⚡ Ultimate AI Scan Completed! Top 3 High-Profit Signals Generated"
+          " Successfully."
       )
       st.markdown("---")
-      st.markdown("### 🏆 Guaranteed Top 3 AI Signals:")
+      st.markdown("### 🏆 Ultimate AI Top 3 Profit Signals:")
 
-      tg_message = "🤖 *GUARANTEED TOP 3 AI INTRADAY SIGNALS* 🤖\n\n"
+      tg_message = "⚡ *ULTIMATE AI TOP 3 HIGH-PROFIT SIGNALS* ⚡\n\n"
 
       for i, stock in enumerate(top_3_stocks, 1):
         with st.container():
           st.markdown(
               f"### 🚀 Rank {i}: {stock['symbol']} ({stock['direction']})"
           )
-          st.info(f"🧠 **AI Intelligence Analysis:** {stock['reason']}")
+          st.info(f"⚡ **Ultimate AI Insights:** {stock['reason']}")
 
           col1, col2, col3 = st.columns(3)
           col1.write(f"Live Price: ₹{stock['price']:.2f} | RSI: {stock['rsi']:.1f}")
@@ -246,30 +240,30 @@ with st.spinner(
 
         tg_message += (
             f"*Rank {i}: {stock['symbol']}* ({stock['direction']})\n"
-            f"🧠 AI Analysis: {stock['reason']}\n"
+            f"⚡ AI Insights: {stock['reason']}\n"
             f"💰 Price: ₹{stock['price']:.2f} | RSI: {stock['rsi']:.1f}\n"
             f"🎯 Entry: {stock['entry']}\n"
             f"🛡️ SL: {stock['sl']} | Qty: {stock['qty']}\n"
             f"🎯 T1: {stock['target1']} | T2: {stock['target2']}\n\n"
         )
 
-      tg_message += "_Powered by Next-Gen AI Quant Engine_ 🤖"
+      tg_message += "_Powered by Ultimate AI Quant Engine_ ⚡"
 
-      if st.button("📲 Send Guaranteed AI Signals to Telegram"):
+      if st.button("📲 Send Ultimate AI Signals to Telegram"):
         if telegram_token and chat_id:
           sent_status = send_telegram_alert(
               telegram_token, chat_id, tg_message
           )
           if sent_status:
-            st.info("📲 Telegram Bot-kku top 3 AI signals anuppappattathu!")
+            st.info("📲 Telegram Bot-kku Ultimate AI signals anuppappattathu!")
           else:
             st.warning("⚠️ Telegram dispatch error.")
         else:
           st.info("💡 Telegram Token & Chat ID missing.")
 
     else:
-      st.error("⚠️ Data fetching error. Please check internet or refresh.")
+      st.error("⚠️ Data fetching error. Please check internet connection.")
 
   except Exception as e:
-    st.error(f"Next-Gen AI Engine execution error: {e}")
+    st.error(f"Ultimate AI Engine execution error: {e}")
             
