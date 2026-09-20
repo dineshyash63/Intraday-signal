@@ -16,9 +16,9 @@ count = st_autorefresh(interval=30000, key="nextgen_ai_auto_refresh")
 
 st.title("🤖 Ultra-Advanced Next-Gen AI Intraday Quant Engine")
 st.write(
-    "Vanakkam nanba! Intha engine ippo Multi-Timeframe Confluence, Institutional"
-    " Volume Spike Analysis, Volatility Breakout & Dynamic Risk Optimization"
-    " vachi ungalukkaga super-intelligent ah top 3 signals-ai kandupudikkum."
+    "வணக்கம் நண்பா! எந்தச் சூழ்நிலையிலும் (Market எப்படி இருந்தாலும்) தவிர்க்காமல்"
+    " எப்போதும் Top 3 பெஸ்ட் இன்ட்ராடே சிக்னல்களைத் தரும் எக்ஸ்ட்ரீம் AI இன்டெலிஜென்ட்"
+    " சிஸ்டம்."
 )
 
 # --- Sidebar: AI Quant Controls & Settings ---
@@ -84,10 +84,10 @@ def send_telegram_alert(token, chat_id, message):
   return False
 
 
-# Advanced AI Intelligence Engine Scan
+# Advanced AI Intelligence Engine Scan (Guaranteed 3 Signals Logic)
 with st.spinner(
-    "🤖 Next-Gen AI is analyzing institutional flows, momentum, and multi-timeframe"
-    " structures..."
+    "🤖 Next-Gen AI is analyzing market flows to extract guaranteed Top 3"
+    " signals..."
 ):
   try:
     scored_stocks = []
@@ -107,12 +107,10 @@ with st.spinner(
           vol = int(df["Volume"].iloc[-1])
           avg_vol_20 = float(df["Volume"].rolling(window=20).mean().iloc[-1])
 
-          # 1. Exponential Moving Averages (EMA 9, 21, 50) - Multi-Layer Trend
+          # Indicators
           ema_9 = float(df["Close"].ewm(span=9, adjust=False).mean().iloc[-1])
           ema_21 = float(df["Close"].ewm(span=21, adjust=False).mean().iloc[-1])
-          ema_50 = float(df["Close"].ewm(span=50, adjust=False).mean().iloc[-1])
 
-          # 2. Advanced RSI (14)
           delta = df["Close"].diff()
           gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
           loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
@@ -120,18 +118,12 @@ with st.spinner(
           rsi_series = 100 - (100 / (1 + rs))
           current_rsi = float(rsi_series.iloc[-1])
 
-          # 3. MACD with Histogram Momentum
           exp1 = df["Close"].ewm(span=12, adjust=False).mean()
           exp2 = df["Close"].ewm(span=26, adjust=False).mean()
           macd = exp1 - exp2
           signal_line = macd.ewm(span=9, adjust=False).mean()
-          macd_hist = macd - signal_line
-          current_macd = float(macd.iloc[-1])
-          current_signal = float(signal_line.iloc[-1])
-          current_hist = float(macd_hist.iloc[-1])
-          prev_hist = float(macd_hist.iloc[-2])
+          current_hist = float((macd - signal_line).iloc[-1])
 
-          # 4. ATR (Average True Range) for Volatility & Dynamic Risk
           high_low = df["High"] - df["Low"]
           high_close = (df["High"] - df["Close"].shift()).abs()
           low_close = (df["Low"] - df["Close"].shift()).abs()
@@ -150,62 +142,39 @@ with st.spinner(
           price_change_pct = ((latest_price - prev_close) / prev_close) * 100
           volume_spike_ratio = (
               vol / avg_vol_20 if avg_vol_20 > 0 else 1.0
-          )  # Institutional activity check
+          )
 
-          # --- Next-Gen AI Decision Matrix & Intelligence Logic ---
-          # Bullish Setup: Price > EMA 9 > EMA 21, MACD Histogram expanding, RSI strong, Volume spike
-          if (
-              latest_price > ema_9
-              and ema_9 > ema_21
-              and current_rsi >= 50
-              and current_hist > prev_hist
-          ):
+          # Guaranteed Logic: Dynamic Buy/Sell classification based on momentum/price position
+          if latest_price >= ema_9:
             direction = "AI STRONG BUY (LONG)"
             sl_numeric = latest_price - (1.1 * atr)
             target_1 = latest_price + (1.6 * atr)
             target_2 = latest_price + (2.6 * atr)
             entry_zone = f"₹{latest_price:.2f} - ₹{(latest_price * 1.002):.2f}"
-
-            # Advanced AI Multi-Factor Scoring Formula
             ai_score = (
                 (current_rsi * 1.5)
                 + (abs(price_change_pct) * 10)
-                + (current_hist * 25)
-                + (volume_spike_ratio * 15)
+                + (volume_spike_ratio * 10)
             )
             ai_reason = (
-                f"Bullish Trend Alignment (EMA 9 > 21), RSI ({current_rsi:.1f})"
-                f" Safe Zone, MACD Hist Expanding, Volume Spike"
-                f" ({volume_spike_ratio:.1f}x)"
+                f"Bullish Momentum Zone (Price >= EMA 9), RSI ({current_rsi:.1f})"
+                f", Volume Strength ({volume_spike_ratio:.1f}x)"
             )
-
-          # Bearish Setup: Price < EMA 9 < EMA 21, MACD Histogram contracting downward, RSI weak
-          elif (
-              latest_price < ema_9
-              and ema_9 < ema_21
-              and current_rsi <= 50
-              and current_hist < prev_hist
-          ):
+          else:
             direction = "AI STRONG SELL (SHORT)"
             sl_numeric = latest_price + (1.1 * atr)
             target_1 = latest_price - (1.6 * atr)
             target_2 = latest_price - (2.6 * atr)
             entry_zone = f"₹{latest_price:.2f} - ₹{(latest_price * 0.998):.2f}"
-
-            # Advanced AI Multi-Factor Scoring Formula for Short
             ai_score = (
                 ((100 - current_rsi) * 1.5)
                 + (abs(price_change_pct) * 10)
-                + (abs(current_hist) * 25)
-                + (volume_spike_ratio * 15)
+                + (volume_spike_ratio * 10)
             )
             ai_reason = (
-                f"Bearish Trend Alignment (EMA 9 < 21), RSI ({current_rsi:.1f})"
-                f" Weak Zone, MACD Negative Momentum, Volume Spike"
-                f" ({volume_spike_ratio:.1f}x)"
+                f"Bearish Momentum Zone (Price < EMA 9), RSI ({current_rsi:.1f})"
+                f", Volume Strength ({volume_spike_ratio:.1f}x)"
             )
-          else:
-            continue
 
           risk_per_share = abs(latest_price - sl_numeric)
           suggested_qty = (
@@ -219,7 +188,6 @@ with st.spinner(
               "price": latest_price,
               "change": price_change_pct,
               "rsi": current_rsi,
-              "macd_hist": current_hist,
               "score": ai_score,
               "direction": direction,
               "entry": entry_zone,
@@ -235,18 +203,18 @@ with st.spinner(
         continue
 
     if scored_stocks:
-      # Sort by AI Intelligence Score (Highest probability first)
+      # Sort by AI Intelligence Score to get absolute best 3
       scored_stocks.sort(key=lambda x: x["score"], reverse=True)
       top_3_stocks = scored_stocks[:3]
 
       st.success(
-          "🤖 Next-Gen AI Quant Scan Completed! Top 3 High-Probability Intraday"
-          " Signals Identified."
+          "🤖 Next-Gen AI Scan Completed! Guaranteed Top 3 Intraday Signals"
+          " Generated."
       )
       st.markdown("---")
-      st.markdown("### 🏆 Next-Gen AI Top 3 High-Confidence Signals:")
+      st.markdown("### 🏆 Guaranteed Top 3 AI Signals:")
 
-      tg_message = "🤖 *NEXT-GEN AI TOP 3 INTRADAY SIGNALS* 🤖\n\n"
+      tg_message = "🤖 *GUARANTEED TOP 3 AI INTRADAY SIGNALS* 🤖\n\n"
 
       for i, stock in enumerate(top_3_stocks, 1):
         with st.container():
@@ -287,23 +255,20 @@ with st.spinner(
 
       tg_message += "_Powered by Next-Gen AI Quant Engine_ 🤖"
 
-      if st.button("📲 Send Next-Gen AI Signals to Telegram"):
+      if st.button("📲 Send Guaranteed AI Signals to Telegram"):
         if telegram_token and chat_id:
           sent_status = send_telegram_alert(
               telegram_token, chat_id, tg_message
           )
           if sent_status:
-            st.info("📲 Telegram Bot-kku Next-Gen AI signals anuppappattathu!")
+            st.info("📲 Telegram Bot-kku top 3 AI signals anuppappattathu!")
           else:
             st.warning("⚠️ Telegram dispatch error.")
         else:
           st.info("💡 Telegram Token & Chat ID missing.")
 
     else:
-      st.error(
-          "Current market phase-la institutional volume & multi-timeframe trend"
-          " match aagura perfect signals illai (Market is consolidating)."
-      )
+      st.error("⚠️ Data fetching error. Please check internet or refresh.")
 
   except Exception as e:
     st.error(f"Next-Gen AI Engine execution error: {e}")
