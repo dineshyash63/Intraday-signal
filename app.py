@@ -6,22 +6,22 @@ from streamlit_autorefresh import st_autorefresh
 
 # Page Configuration
 st.set_page_config(
-    page_title="Ultimate AI Intelligent Intraday Quant Engine",
-    page_icon="⚡",
+    page_title="Ultimate Confluence AI Intraday Quant Engine",
+    page_icon="🚀",
     layout="wide",
 )
 
 # Auto-refresh every 30 seconds for live market synchronization
-count = st_autorefresh(interval=30000, key="ultimate_ai_auto_refresh")
+count = st_autorefresh(interval=30000, key="confluence_ai_auto_refresh")
 
-st.title("⚡ Ultimate AI Intelligent Pro Intraday Quant Engine")
+st.title("🚀 Ultimate Confluence AI Intraday Quant Engine")
 st.write(
-    "வணக்கம் நண்பா! உனக்காக பிரத்யேகமாக உருவாக்கப்பட்ட எக்ஸ்ட்ரீம் AI லாஜிக்."
-    " எந்தக் சூழ்நிலையிலும் எப்போதும் Top 3 பெஸ்ட் இன்ட்ராடே சிக்னல்களைத் தரும்."
+    "வணக்கம் நண்பா! Global Market Trend & Confluence Filter இணைக்கப்பட்ட மிகத்"
+    " துல்லியமான Top 3 இன்ட்ராடே சிக்னல் சிஸ்டம்."
 )
 
 # --- Sidebar: AI Quant Controls & Settings ---
-st.sidebar.header("🛠️ Ultimate AI Quant Hub")
+st.sidebar.header("🛠️ Confluence AI Quant Hub")
 
 default_token = "8462007353:AAFZsWmNgiVWBIPngaA5AEnHqzwWhMRl9hU"
 default_chat_id = "1147331498"
@@ -83,9 +83,40 @@ def send_telegram_alert(token, chat_id, message):
   return False
 
 
-# Ultimate AI Intelligence Engine Scan
+# Fetch Nifty 50 Trend for Global Confluence Check
+market_trend_status = "NEUTRAL"
+market_trend_color = "orange"
+try:
+  nifty_ticker = yf.Ticker("^NSEI")
+  nifty_df = nifty_ticker.history(period="5d", interval="1d")
+  if nifty_df is not None and not nifty_df.empty:
+    nifty_latest = float(nifty_df["Close"].iloc[-1])
+    nifty_prev = float(nifty_df["Close"].iloc[-2])
+    nifty_change = ((nifty_latest - nifty_prev) / nifty_prev) * 100
+    if nifty_change > 0.1:
+      market_trend_status = (
+          f"BULLISH (Nifty +{nifty_change:.2f}% - Positive Confluence)"
+      )
+      market_trend_color = "green"
+    elif nifty_change < -0.1:
+      market_trend_status = (
+          f"BEARISH (Nifty {nifty_change:.2f}% - Negative Confluence)"
+      )
+      market_trend_color = "red"
+    else:
+      market_trend_status = f"SIDEWAYS (Nifty {nifty_change:.2f}%)"
+except Exception:
+  market_trend_status = "NEUTRAL (Market Trend Unavailable)"
+
+st.markdown(
+    f"### 🌐 Live Market Confluence Status: :{market_trend_color}["
+    f"{market_trend_status}]"
+)
+st.markdown("---")
+
+# Ultimate Confluence AI Scan Engine
 with st.spinner(
-    "⚡ Ultimate AI is computing multi-indicator scores and profit setups..."
+    "🚀 Confluence AI is analyzing technicals & market trends..."
 ):
   try:
     scored_stocks = []
@@ -105,7 +136,6 @@ with st.spinner(
           vol = int(df["Volume"].iloc[-1])
           avg_vol_20 = float(df["Volume"].rolling(window=20).mean().iloc[-1])
 
-          # Advanced Indicators
           ema_9 = float(df["Close"].ewm(span=9, adjust=False).mean().iloc[-1])
           ema_21 = float(df["Close"].ewm(span=21, adjust=False).mean().iloc[-1])
 
@@ -136,22 +166,28 @@ with st.spinner(
               vol / avg_vol_20 if avg_vol_20 > 0 else 1.0
           )
 
-          # Guaranteed High-Profit Selection Logic
+          # Confluence scoring logic
           if latest_price >= ema_9:
             direction = "AI STRONG BUY (LONG)"
             sl_numeric = latest_price - (1.1 * atr)
             target_1 = latest_price + (1.6 * atr)
             target_2 = latest_price + (2.6 * atr)
             entry_zone = f"₹{latest_price:.2f} - ₹{(latest_price * 1.002):.2f}"
+
+            # Boost score if market trend is also bullish
+            trend_bonus = (
+                25 if "BULLISH" in market_trend_status.upper() else 0
+            )
             ai_score = (
                 (current_rsi * 1.8)
                 + (abs(price_change_pct) * 12)
                 + (volume_spike_ratio * 15)
+                + trend_bonus
             )
             ai_reason = (
-                f"Bullish Momentum Confirmed (Price >= EMA 9), RSI"
-                f" ({current_rsi:.1f}), Volume Multiplier"
-                f" ({volume_spike_ratio:.1f}x)"
+                f"Bullish Confluence (Price >= EMA 9), RSI ({current_rsi:.1f})"
+                f", Vol Multiplier ({volume_spike_ratio:.1f}x), Trend Bonus"
+                f" (+{trend_bonus})"
             )
           else:
             direction = "AI STRONG SELL (SHORT)"
@@ -159,15 +195,21 @@ with st.spinner(
             target_1 = latest_price - (1.6 * atr)
             target_2 = latest_price - (2.6 * atr)
             entry_zone = f"₹{latest_price:.2f} - ₹{(latest_price * 0.998):.2f}"
+
+            # Boost score if market trend is also bearish
+            trend_bonus = (
+                25 if "BEARISH" in market_trend_status.upper() else 0
+            )
             ai_score = (
                 ((100 - current_rsi) * 1.8)
                 + (abs(price_change_pct) * 12)
                 + (volume_spike_ratio * 15)
+                + trend_bonus
             )
             ai_reason = (
-                f"Bearish Momentum Confirmed (Price < EMA 9), RSI"
-                f" ({current_rsi:.1f}), Volume Multiplier"
-                f" ({volume_spike_ratio:.1f}x)"
+                f"Bearish Confluence (Price < EMA 9), RSI ({current_rsi:.1f})"
+                f", Vol Multiplier ({volume_spike_ratio:.1f}x), Trend Bonus"
+                f" (+{trend_bonus})"
             )
 
           risk_per_share = abs(latest_price - sl_numeric)
@@ -197,25 +239,27 @@ with st.spinner(
         continue
 
     if scored_stocks:
-      # Sort by Ultimate AI Intelligence Score
       scored_stocks.sort(key=lambda x: x["score"], reverse=True)
       top_3_stocks = scored_stocks[:3]
 
       st.success(
-          "⚡ Ultimate AI Scan Completed! Top 3 High-Profit Signals Generated"
-          " Successfully."
+          "🚀 Confluence AI Scan Completed! Top 3 High-Probability Signals"
+          " Ready."
       )
       st.markdown("---")
-      st.markdown("### 🏆 Ultimate AI Top 3 Profit Signals:")
+      st.markdown("### 🏆 Confluence AI Top 3 Signals:")
 
-      tg_message = "⚡ *ULTIMATE AI TOP 3 HIGH-PROFIT SIGNALS* ⚡\n\n"
+      tg_message = (
+          "🚀 *CONFLUENCE AI TOP 3 HIGH-PROBABILITY SIGNALS* 🚀\n"
+          f"Market Trend: {market_trend_status}\n\n"
+      )
 
       for i, stock in enumerate(top_3_stocks, 1):
         with st.container():
           st.markdown(
-              f"### 🚀 Rank {i}: {stock['symbol']} ({stock['direction']})"
+              f"### ⚡ Rank {i}: {stock['symbol']} ({stock['direction']})"
           )
-          st.info(f"⚡ **Ultimate AI Insights:** {stock['reason']}")
+          st.info(f"📊 **Confluence Insights:** {stock['reason']}")
 
           col1, col2, col3 = st.columns(3)
           col1.write(f"Live Price: ₹{stock['price']:.2f} | RSI: {stock['rsi']:.1f}")
@@ -233,29 +277,31 @@ with st.spinner(
           col3.markdown(f"**Target 1:** {stock['target1']}")
           col3.markdown(f"**Target 2:** {stock['target2']}")
           col3.write(
-              f"Vol Ratio: {stock['vol_ratio']:.1f}x | AI Score:"
+              f"Vol Ratio: {stock['vol_ratio']:.1f}x | Confluence Score:"
               f" {stock['score']:.1f}"
           )
           st.markdown("---")
 
         tg_message += (
             f"*Rank {i}: {stock['symbol']}* ({stock['direction']})\n"
-            f"⚡ AI Insights: {stock['reason']}\n"
+            f"📊 Insights: {stock['reason']}\n"
             f"💰 Price: ₹{stock['price']:.2f} | RSI: {stock['rsi']:.1f}\n"
             f"🎯 Entry: {stock['entry']}\n"
             f"🛡️ SL: {stock['sl']} | Qty: {stock['qty']}\n"
             f"🎯 T1: {stock['target1']} | T2: {stock['target2']}\n\n"
         )
 
-      tg_message += "_Powered by Ultimate AI Quant Engine_ ⚡"
+      tg_message += "_Powered by Confluence AI Quant Engine_ 🚀"
 
-      if st.button("📲 Send Ultimate AI Signals to Telegram"):
+      if st.button("📲 Send Confluence AI Signals to Telegram"):
         if telegram_token and chat_id:
           sent_status = send_telegram_alert(
               telegram_token, chat_id, tg_message
           )
           if sent_status:
-            st.info("📲 Telegram Bot-kku Ultimate AI signals anuppappattathu!")
+            st.info(
+                "📲 Telegram Bot-kku Confluence AI signals anuppappattathu!"
+            )
           else:
             st.warning("⚠️ Telegram dispatch error.")
         else:
@@ -265,5 +311,4 @@ with st.spinner(
       st.error("⚠️ Data fetching error. Please check internet connection.")
 
   except Exception as e:
-    st.error(f"Ultimate AI Engine execution error: {e}")
-            
+    st.error(f"Confluence AI Engine execution error: {e}")
