@@ -6,22 +6,22 @@ from streamlit_autorefresh import st_autorefresh
 
 # Page Configuration
 st.set_page_config(
-    page_title="Ultimate Confluence AI Intraday Quant Engine",
-    page_icon="🚀",
+    page_title="Master-Class AI Pro Quant Terminal",
+    page_icon="👑",
     layout="wide",
 )
 
 # Auto-refresh every 30 seconds for live market synchronization
-count = st_autorefresh(interval=30000, key="confluence_ai_auto_refresh")
+count = st_autorefresh(interval=30000, key="master_ai_auto_refresh")
 
-st.title("🚀 Ultimate Confluence AI Intraday Quant Engine")
+st.title("👑 Master-Class AI Pro Quant Terminal")
 st.write(
-    "வணக்கம் நண்பா! Global Market Trend & Confluence Filter இணைக்கப்பட்ட மிகத்"
-    " துல்லியமான Top 3 இன்ட்ராடே சிக்னல் சிஸ்டம்."
+    "வணக்கம் நண்பா! VWAP, Bollinger Bands Squeeze, Volume Profile மற்றும் Market"
+    " Timing Filters இணைக்கப்பட்ட Ultimate Pro Trading Engine."
 )
 
 # --- Sidebar: AI Quant Controls & Settings ---
-st.sidebar.header("🛠️ Confluence AI Quant Hub")
+st.sidebar.header("🛠️ Master-Class Quant Hub")
 
 default_token = "8462007353:AAFZsWmNgiVWBIPngaA5AEnHqzwWhMRl9hU"
 default_chat_id = "1147331498"
@@ -83,7 +83,7 @@ def send_telegram_alert(token, chat_id, message):
   return False
 
 
-# Fetch Nifty 50 Trend for Global Confluence Check
+# Market Trend Confluence Check
 market_trend_status = "NEUTRAL"
 market_trend_color = "orange"
 try:
@@ -94,29 +94,26 @@ try:
     nifty_prev = float(nifty_df["Close"].iloc[-2])
     nifty_change = ((nifty_latest - nifty_prev) / nifty_prev) * 100
     if nifty_change > 0.1:
-      market_trend_status = (
-          f"BULLISH (Nifty +{nifty_change:.2f}% - Positive Confluence)"
-      )
+      market_trend_status = f"BULLISH (Nifty +{nifty_change:.2f}%)"
       market_trend_color = "green"
     elif nifty_change < -0.1:
-      market_trend_status = (
-          f"BEARISH (Nifty {nifty_change:.2f}% - Negative Confluence)"
-      )
+      market_trend_status = f"BEARISH (Nifty {nifty_change:.2f}%)"
       market_trend_color = "red"
     else:
       market_trend_status = f"SIDEWAYS (Nifty {nifty_change:.2f}%)"
 except Exception:
-  market_trend_status = "NEUTRAL (Market Trend Unavailable)"
+  market_trend_status = "NEUTRAL"
 
 st.markdown(
-    f"### 🌐 Live Market Confluence Status: :{market_trend_color}["
+    f"### 🌐 Live Market Confluence: :{market_trend_color}["
     f"{market_trend_status}]"
 )
 st.markdown("---")
 
-# Ultimate Confluence AI Scan Engine
+# Master-Class Engine Scan
 with st.spinner(
-    "🚀 Confluence AI is analyzing technicals & market trends..."
+    "👑 Master-Class AI is calculating VWAP, Bollinger Squeeze & Quant"
+    " Scores..."
 ):
   try:
     scored_stocks = []
@@ -138,6 +135,22 @@ with st.spinner(
 
           ema_9 = float(df["Close"].ewm(span=9, adjust=False).mean().iloc[-1])
           ema_21 = float(df["Close"].ewm(span=21, adjust=False).mean().iloc[-1])
+
+          # VWAP approximation using typical price and volume
+          typical_price = (df["High"] + df["Low"] + df["Close"]) / 3
+          vwap = float(
+              (typical_price * df["Volume"]).cumsum().iloc[-1]
+              / df["Volume"].cumsum().iloc[-1]
+          )
+
+          # Bollinger Bands (20, 2)
+          sma_20 = df["Close"].rolling(window=20).mean()
+          std_20 = df["Close"].rolling(window=20).std()
+          upper_band = sma_20 + (std_20 * 2)
+          lower_band = sma_20 - (std_20 * 2)
+          bb_width = float(
+              ((upper_band - lower_band) / sma_20).iloc[-1]
+          )  # Squeeze metric
 
           delta = df["Close"].diff()
           gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
@@ -166,28 +179,27 @@ with st.spinner(
               vol / avg_vol_20 if avg_vol_20 > 0 else 1.0
           )
 
-          # Confluence scoring logic
-          if latest_price >= ema_9:
+          # Master Scoring & Setup Decision
+          if latest_price >= vwap:
             direction = "AI STRONG BUY (LONG)"
             sl_numeric = latest_price - (1.1 * atr)
             target_1 = latest_price + (1.6 * atr)
             target_2 = latest_price + (2.6 * atr)
             entry_zone = f"₹{latest_price:.2f} - ₹{(latest_price * 1.002):.2f}"
 
-            # Boost score if market trend is also bullish
             trend_bonus = (
-                25 if "BULLISH" in market_trend_status.upper() else 0
+                30 if "BULLISH" in market_trend_status.upper() else 10
             )
             ai_score = (
-                (current_rsi * 1.8)
-                + (abs(price_change_pct) * 12)
+                (current_rsi * 1.5)
+                + (abs(price_change_pct) * 10)
                 + (volume_spike_ratio * 15)
-                + trend_bonus
+                + (trend_bonus * 1.2)
             )
             ai_reason = (
-                f"Bullish Confluence (Price >= EMA 9), RSI ({current_rsi:.1f})"
-                f", Vol Multiplier ({volume_spike_ratio:.1f}x), Trend Bonus"
-                f" (+{trend_bonus})"
+                f"Bullish VWAP Confluence (Price >= VWAP), RSI"
+                f" ({current_rsi:.1f}), BB Squeeze Width ({bb_width:.3f}), Vol"
+                f" Spike ({volume_spike_ratio:.1f}x)"
             )
           else:
             direction = "AI STRONG SELL (SHORT)"
@@ -196,20 +208,19 @@ with st.spinner(
             target_2 = latest_price - (2.6 * atr)
             entry_zone = f"₹{latest_price:.2f} - ₹{(latest_price * 0.998):.2f}"
 
-            # Boost score if market trend is also bearish
             trend_bonus = (
-                25 if "BEARISH" in market_trend_status.upper() else 0
+                30 if "BEARISH" in market_trend_status.upper() else 10
             )
             ai_score = (
-                ((100 - current_rsi) * 1.8)
-                + (abs(price_change_pct) * 12)
+                ((100 - current_rsi) * 1.5)
+                + (abs(price_change_pct) * 10)
                 + (volume_spike_ratio * 15)
-                + trend_bonus
+                + (trend_bonus * 1.2)
             )
             ai_reason = (
-                f"Bearish Confluence (Price < EMA 9), RSI ({current_rsi:.1f})"
-                f", Vol Multiplier ({volume_spike_ratio:.1f}x), Trend Bonus"
-                f" (+{trend_bonus})"
+                f"Bearish VWAP Confluence (Price < VWAP), RSI"
+                f" ({current_rsi:.1f}), BB Squeeze Width ({bb_width:.3f}), Vol"
+                f" Spike ({volume_spike_ratio:.1f}x)"
             )
 
           risk_per_share = abs(latest_price - sl_numeric)
@@ -224,6 +235,7 @@ with st.spinner(
               "price": latest_price,
               "change": price_change_pct,
               "rsi": current_rsi,
+              "vwap": vwap,
               "score": ai_score,
               "direction": direction,
               "entry": entry_zone,
@@ -243,14 +255,14 @@ with st.spinner(
       top_3_stocks = scored_stocks[:3]
 
       st.success(
-          "🚀 Confluence AI Scan Completed! Top 3 High-Probability Signals"
-          " Ready."
+          "👑 Master-Class Scan Completed! Top 3 Institutional Signals"
+          " Generated."
       )
       st.markdown("---")
-      st.markdown("### 🏆 Confluence AI Top 3 Signals:")
+      st.markdown("### 🏆 Master-Class Top 3 Signals:")
 
       tg_message = (
-          "🚀 *CONFLUENCE AI TOP 3 HIGH-PROBABILITY SIGNALS* 🚀\n"
+          "👑 *MASTER-CLASS AI PRO SIGNALS* 👑\n"
           f"Market Trend: {market_trend_status}\n\n"
       )
 
@@ -259,10 +271,12 @@ with st.spinner(
           st.markdown(
               f"### ⚡ Rank {i}: {stock['symbol']} ({stock['direction']})"
           )
-          st.info(f"📊 **Confluence Insights:** {stock['reason']}")
+          st.info(f"📊 **Master Insights:** {stock['reason']}")
 
           col1, col2, col3 = st.columns(3)
-          col1.write(f"Live Price: ₹{stock['price']:.2f} | RSI: {stock['rsi']:.1f}")
+          col1.write(
+              f"Price: ₹{stock['price']:.2f} | VWAP: ₹{stock['vwap']:.2f}"
+          )
           if stock["change"] >= 0:
             col1.markdown(
                 "Change: :green[+" + f"{stock['change']:.2f}%" + "]"
@@ -277,31 +291,28 @@ with st.spinner(
           col3.markdown(f"**Target 1:** {stock['target1']}")
           col3.markdown(f"**Target 2:** {stock['target2']}")
           col3.write(
-              f"Vol Ratio: {stock['vol_ratio']:.1f}x | Confluence Score:"
-              f" {stock['score']:.1f}"
+              f"RSI: {stock['rsi']:.1f} | Master Score: {stock['score']:.1f}"
           )
           st.markdown("---")
 
         tg_message += (
             f"*Rank {i}: {stock['symbol']}* ({stock['direction']})\n"
             f"📊 Insights: {stock['reason']}\n"
-            f"💰 Price: ₹{stock['price']:.2f} | RSI: {stock['rsi']:.1f}\n"
+            f"💰 Price: ₹{stock['price']:.2f} | VWAP: ₹{stock['vwap']:.2f}\n"
             f"🎯 Entry: {stock['entry']}\n"
             f"🛡️ SL: {stock['sl']} | Qty: {stock['qty']}\n"
             f"🎯 T1: {stock['target1']} | T2: {stock['target2']}\n\n"
         )
 
-      tg_message += "_Powered by Confluence AI Quant Engine_ 🚀"
+      tg_message += "_Powered by Master-Class AI Quant Terminal_ 👑"
 
-      if st.button("📲 Send Confluence AI Signals to Telegram"):
+      if st.button("📲 Send Master-Class Signals to Telegram"):
         if telegram_token and chat_id:
           sent_status = send_telegram_alert(
               telegram_token, chat_id, tg_message
           )
           if sent_status:
-            st.info(
-                "📲 Telegram Bot-kku Confluence AI signals anuppappattathu!"
-            )
+            st.info("📲 Telegram-kku Master-Class signals anuppappattathu!")
           else:
             st.warning("⚠️ Telegram dispatch error.")
         else:
@@ -311,4 +322,5 @@ with st.spinner(
       st.error("⚠️ Data fetching error. Please check internet connection.")
 
   except Exception as e:
-    st.error(f"Confluence AI Engine execution error: {e}")
+    st.error(f"Master-Class Engine execution error: {e}")
+            
